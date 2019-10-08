@@ -23,11 +23,127 @@ Aqui, vamos aprender algumas coisas importantes para escrever bons códigos em J
 Mas antes, precisamos falar sobre alguns princípios de **Programação Orientada a Objetos**
 
 
+## Pilares da Programação Orientada a Objetos
+
+### Paradigma Procedural (a.k.a Código "Macarrônico")
+
+Qual o problema do código abaixo
+
+```c
+//Código fonte obtido em https://github.com/emacdona/tictactoe/blob/master/main.c
+#include <stdio.h>
+#include "board.h"
+int main(int argc, char* argv[])
+{
+   //Variáveis de controle
+   char board[3][3];
+   char input[3];
+   int moveTo;
+   int turn = 0;
+   char player;
+
+   //Definição da função
+   initBoard(board);
+
+   //Lógica do Jogo
+   while(1){
+      player = (turn % 2) ? 'o' : 'x';
+      system("clear");
+      drawBoard(board);
+
+      if(state(board) == 1){
+         printf("\nWinner!\n");
+         return 0;
+      }
+
+      if(state(board) == -1){
+         printf("\nDraw!\n");
+         return 0;
+      }
+
+      printf("\n(turn #%i) To which square would you (player %c) like to move? ", turn, player);
+      fgets(input, 3, stdin);
+      moveTo = atoi(input);
+
+      if(mv(board, moveTo, player))
+         turn++;
+
+      printf("\n");
+   }
+
+   return 0;
+}
+
+
+```
+### Programação orientada a objetos
+
+- **Encapsulamento**
+- **Abstração**
+- Herança
+- Polimorfismo
+
+Uma solução mais simples ao jogo da velha:
+
+```java 
+public class Program {
+    public static void main() {
+        Game game = new TicTacToe();
+        game.play();
+    }
+}
+
+public interface Game {
+    void play();
+}
+
+public class TicTacToe implements Game {
+    private Player player1;
+    private Player player2;
+    private Board board;
+    private Player currentPlayer;
+    public TicTacToe(){
+        this.player1 = new Player("X");
+        this.player2 = new Player("O");
+        this.board = new Board();
+    }
+
+    // Implementa toda a lógica do jogo
+    public void play() { /* ... */ }
+
+    // Lógica interna (não externalizada a quem tá utilizando a classe)
+    private boolean hasWinner() { /* ... */ }
+
+    //...
+}
+
+public class Player {
+    private String symbol;
+    public Player(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public String getSymbol() {
+        return this.symbol;
+    }
+}
+
+public class Board {
+    private String[][] board;
+    public Board() {
+        this.board = new String[3][3];
+    }
+    
+    public void draw() { /* ... */ }
+}
+
+```
+
+
 ## S.O.L.I.D
 
 S.O.L.I.D é um acrônimo para cinco princípios de programação orientada a objetos. Esses princípios são importantes para identificar quando o 
 
-### ***Single Responsability Principle (SRP)***
 
 **Qual o problema com esse código**
 
@@ -47,7 +163,7 @@ public class UserService extends DatabaseConection {
         }
 
         // Verifica se o usuário existe na base
-        Connection conn = getConnection();
+        Connection conn = super.getConnection();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT ID FROM USERS WHERE EMAIL = " + user.getEmail());
         
@@ -61,7 +177,7 @@ public class UserService extends DatabaseConection {
 
     }
 
-    public boolean isValidEmail(String emailStr) {
+    private boolean isValidEmail(String emailStr) {
         String regEx = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$";
         Pattern pattern = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(emailStr);
@@ -123,7 +239,6 @@ public class UserValidator extends Validator<User> {
 }
 
 public abstract class Repository<T> {
-
     public abstract T create(T item);
     public abstract T read(long id);
     public abstract T update(T item);
@@ -150,9 +265,6 @@ public class UserService {
 }
 ```
 
-
-### ***Open-Closed Principle (OCP)***
-
 **Qual o problema com esse código?**
 
 ```java
@@ -168,34 +280,77 @@ public class PagamentoService {
     public void pagar(double valor, TipoPagamento tipoPagamento, Cliente cliente){
         if(tipoPagamento.BOLETO){
             /* Implementação do código */
-            salvaNoBanco(pagamentoBoleto);
+            salvaNoBanco(pagamentoBoleto, cliente);
         }
         
         if(tipoPagamento.CARTAO_CREDITO){
             /* Implementação do código */
-            salvaNoBanco(pagamentoCartao);
+            salvaNoBanco(pagamentoCartao, cliente);
         }
         // ...
     }
 }
 ```
 
+### ***Single Responsibility Principle (SRP)***
+
+``` 
+Uma classe deve ter um, e somente um, motivo para ser modificada
+```
+
+### ***Open-Closed Principle (OCP)***
+
+```
+Aberto para extensão (open), fechado para modificação (closed)
+```
 
 ### ***Liskov Substitution Principle (LSP)***
+
+```
+
+```
 
 ### ***Interface Segregation Principle (ISP)***
 
 ### ***Dependency Inversion Principle (DIP)***
 
-
-## Como identificar os code smells?
-
-
-Qual é o problema com esse código?
+```
+Dependa sempre de abstrações, não de implementações
+```
 
 
 
-## Como refatorar
+# Code Smells
+
+- São indícios em um código que indicam que eles não estão seguindo os bons princípios da OO e do SOLID.
+- São derivações dos pilares da POO.
+
+
+## Code smells a nível de aplicação
+
+- [Duplicated Code]()
+- [Contrived complexity]()
+- [Shotgun surgery]()
+
+
+## Code smells a nível de classe
+
+- [Large class]()
+- [Feature envy]()
+- [Inappropriate intimacy]()
+- [Refused bequest]()
+- [Excessive use of literals]()
+- [Cyclomatic complexity]()
+- [Downcasting]()
+- [Orphan variable or constant class]()
+
+## Code mells a nível de método
+
+- [Too many parameters]()
+- [Long method]()
+- [Excessively short identifiers]()
+- [Excessive return of data]()
+- [Excessively long line of code (or God Line)]()
 
 
 ## A importância do processo de desenvolvimento de software
@@ -234,3 +389,5 @@ Se você meteu a mão num sistema XGH, é melhor saber o que está fazendo. E se
 ### Code Review
 
 ### Testes unitários e TDD
+
+
